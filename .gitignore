@@ -1,4 +1,6 @@
 node_modules/
 dist/
 out/
-public/projects/
+public/
+characters/*
+!characters/README.md
