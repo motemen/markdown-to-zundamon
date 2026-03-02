@@ -14,6 +14,13 @@ export const CharacterSchema = z.object({
   activeImages: z.array(z.string()).optional(),
 });
 
+export const BgmConfigSchema = z.object({
+  src: z.string(),
+  volume: z.number().min(0).max(1).default(0.1),
+  fadeInMs: z.number().min(0).default(0),
+  fadeOutMs: z.number().min(0).default(1000),
+});
+
 export const ManifestConfigSchema = z.object({
   fps: z.number().default(30),
   width: z.number().default(1920),
@@ -27,6 +34,7 @@ export const ManifestConfigSchema = z.object({
   subtitleFontFamily: z.string().optional(),
   slideFontFamily: z.string().optional(),
   codeHighlightTheme: z.string().default("oneLight"),
+  bgm: BgmConfigSchema.optional(),
 });
 
 export const SegmentSchema = z.object({
@@ -42,6 +50,7 @@ export const ManifestSchema = z.object({
   config: ManifestConfigSchema,
   totalDurationInFrames: z.number(),
   segments: z.array(SegmentSchema),
+  bgmFile: z.string().optional(),
 });
 
 export const CompositionPropsSchema = z.object({

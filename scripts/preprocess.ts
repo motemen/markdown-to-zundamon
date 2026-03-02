@@ -465,6 +465,32 @@ async function main() {
   // Copy character images (before manifest write so activeImages is populated)
   copyCharacterImages(config.characters);
 
+  // Copy BGM file if configured
+  let bgmFile: string | undefined;
+  if (config.bgm) {
+    const bgmSrc = config.bgm.src;
+    // Try resolving: 1) relative to md file, 2) relative to project root
+    const candidates = [
+      path.resolve(mdDir, bgmSrc),
+      path.resolve(__dirname, "..", bgmSrc),
+    ];
+    const resolvedBgm = candidates.find((p) => fs.existsSync(p));
+    if (!resolvedBgm) {
+      throw new Error(
+        `BGM file not found: "${bgmSrc}"\n` +
+        `  Tried:\n` +
+        candidates.map((p) => `    - ${p}`).join("\n")
+      );
+    }
+    const bgmDir = path.join(projectDir, "bgm");
+    fs.mkdirSync(bgmDir, { recursive: true });
+    const bgmFilename = path.basename(resolvedBgm);
+    const bgmDest = path.join(bgmDir, bgmFilename);
+    fs.copyFileSync(resolvedBgm, bgmDest);
+    bgmFile = `projects/${projectName}/bgm/${bgmFilename}`;
+    console.log(`  [bgm] ${bgmSrc} → ${bgmFile}`);
+  }
+
   const totalDurationInFrames = segments.reduce(
     (sum, s) => sum + s.durationInFrames,
     0
@@ -474,6 +500,7 @@ async function main() {
     config,
     totalDurationInFrames,
     segments,
+    ...(bgmFile ? { bgmFile } : {}),
   };
 
   const manifestPath = path.join(projectDir, "manifest.json");

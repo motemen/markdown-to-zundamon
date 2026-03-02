@@ -140,6 +140,25 @@ characters:
 
 キャラクター画像は `characters/<キャラ名>/default.png` に配置してください。口パクアニメーション用に `default_active1.png`, `default_active2.png` を追加すると、発話中に口が動くようになります。
 
+### BGM 設定
+
+`bgm` で動画にBGMを追加できます。BGM ファイルのパスは Markdown ファイルからの相対パス、またはプロジェクトルートからの相対パスで指定します。
+
+```yaml
+---
+bgm:
+  src: ./bgm/background-music.mp3   # BGM ファイルパス（必須）
+  volume: 0.1                        # 音量 0〜1（デフォルト: 0.1）
+  fadeInMs: 2000                     # フェードイン時間（ミリ秒、デフォルト: 0）
+  fadeOutMs: 3000                    # フェードアウト時間（ミリ秒、デフォルト: 1000）
+characters:
+  - name: ずんだもん
+    speakerId: 3
+---
+```
+
+`preprocess`時に BGM ファイルが `public/projects/<プロジェクト名>/bgm/` に自動コピーされ、動画全体でループ再生されます。対応形式は mp3, wav, ogg など（HTML5 Audio がサポートするもの）。
+
 ## Markdown の書き方
 
 ### セリフ
@@ -216,6 +235,7 @@ characters:
 │   └── <project>/
 │       ├── manifest.json
 │       ├── audio/
+│       ├── bgm/
 │       └── images/
 └── out/                  # レンダリング出力
     └── <project>.mp4
