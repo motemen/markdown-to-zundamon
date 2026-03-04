@@ -16,7 +16,7 @@ const parser = loadDefaultJapaneseParser();
 const SegmentedText: React.FC<{ text: string }> = ({ text }) => {
   const segments = parser.parse(text);
   return (
-    <span style={{ wordBreak: "keep-all" }}>
+    <span style={{ wordBreak: "keep-all", overflowWrap: "break-word" }}>
       {segments.map((seg, i) => (
         <span key={i}>{seg}</span>
       ))}
