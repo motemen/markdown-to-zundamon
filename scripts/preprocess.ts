@@ -1,6 +1,7 @@
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkStringify from "remark-stringify";
+import remarkGfm from "remark-gfm";
 import { toString } from "mdast-util-to-string";
 import matter from "gray-matter";
 import * as fs from "fs";
@@ -194,7 +195,7 @@ async function blockquoteToMarkdown(
 ): Promise<string> {
   // Process images before serializing
   await processImages(node, mdDir, imagesDir, projectName);
-  const processor = unified().use(remarkStringify);
+  const processor = unified().use(remarkGfm).use(remarkStringify);
   const virtualRoot = { type: "root" as const, children: node.children };
   return processor.stringify(virtualRoot).trim();
 }
