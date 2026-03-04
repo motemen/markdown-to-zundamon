@@ -1,0 +1,307 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildSegments snapshot tests > blockquote creates slide segment 1`] = `
+[
+  {
+    "durationInFrames": 0,
+    "markdown": "# タイトルスライド",
+    "text": "タイトルスライド",
+    "type": "slide",
+  },
+  {
+    "audioFile": "mock/audio/3-こんにちは！.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "こんにちは！",
+    "type": "speech",
+  },
+]
+`;
+
+exports[`buildSegments snapshot tests > example.md with two characters produces expected timeline structure 1`] = `
+[
+  {
+    "chapterLevel": 1,
+    "durationInFrames": 0,
+    "text": "イントロ",
+    "type": "chapter",
+  },
+  {
+    "durationInFrames": 0,
+    "markdown": "# markdown-to-zundamon",
+    "text": "markdown-to-zundamon",
+    "type": "slide",
+  },
+  {
+    "audioFile": "mock/audio/3-こんにちは！ ずんだ.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "こんにちは！ ずんだもんなのだ。",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 6,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "audioFile": "mock/audio/2-四国めたんよ。よろし.wav",
+    "character": "四国めたん",
+    "durationInFrames": 30,
+    "text": "四国めたんよ。よろしくね。",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 18,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "durationInFrames": 0,
+    "markdown": "* 動画づくりって大変
+* 文章なら書けるけど…",
+    "text": "動画づくりって大変文章なら書けるけど…",
+    "type": "slide",
+  },
+  {
+    "audioFile": "mock/audio/3-世はまさに動画時代！.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "世はまさに動画時代！",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 6,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "audioFile": "mock/audio/2-文章なら書けるってキ.wav",
+    "character": "四国めたん",
+    "durationInFrames": 30,
+    "text": "文章なら書けるってキミも、動画を作るのは一苦労よね？",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 18,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "chapterLevel": 2,
+    "durationInFrames": 0,
+    "text": "ツールの紹介",
+    "type": "chapter",
+  },
+  {
+    "durationInFrames": 0,
+    "markdown": "## markdown-to-zundamon とは
+
+Markdownを書くだけで、ずんだもんが解説してくれる動画を自動生成！",
+    "text": "markdown-to-zundamon とはMarkdownを書くだけで、ずんだもんが解説してくれる動画を自動生成！",
+    "type": "slide",
+  },
+  {
+    "audioFile": "mock/audio/3-そこで markdo.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "そこで markdown-to-zundamon なのだ！",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 15,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "audioFile": "mock/audio/2-これさえあれば、Ma.wav",
+    "character": "四国めたん",
+    "durationInFrames": 30,
+    "text": "これさえあれば、Markdownファイルからずんだもん動画を生成できるのよ！",
+    "type": "speech",
+  },
+]
+`;
+
+exports[`buildSegments snapshot tests > example-single.md produces expected timeline structure 1`] = `
+[
+  {
+    "durationInFrames": 0,
+    "markdown": "# markdown-to-zundamon",
+    "text": "markdown-to-zundamon",
+    "type": "slide",
+  },
+  {
+    "audioFile": "mock/audio/3-こんにちは！ ずんだ.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "こんにちは！ ずんだもんなのだ。",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 6,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "audioFile": "mock/audio/3-今日はぼくひとりで、.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "今日はぼくひとりで、markdown-to-zundamonを紹介するのだ！",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 18,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "durationInFrames": 0,
+    "markdown": "* 動画づくりって大変
+* 文章なら書けるけど…",
+    "text": "動画づくりって大変文章なら書けるけど…",
+    "type": "slide",
+  },
+  {
+    "audioFile": "mock/audio/3-世はまさに動画時代！.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "世はまさに動画時代！",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 6,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "audioFile": "mock/audio/3-でも、動画を作るのは.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "でも、動画を作るのは一苦労だよね？",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 18,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "durationInFrames": 0,
+    "markdown": "## markdown-to-zundamon とは
+
+Markdownを書くだけで、ずんだもんが解説してくれる動画を自動生成！",
+    "text": "markdown-to-zundamon とはMarkdownを書くだけで、ずんだもんが解説してくれる動画を自動生成！",
+    "type": "slide",
+  },
+  {
+    "audioFile": "mock/audio/3-そこで markdo.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "そこで markdown-to-zundamon なのだ！",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 15,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "audioFile": "mock/audio/3-これさえあれば、Ma.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "これさえあれば、Markdownファイルからずんだもん動画を生成できるのだ！",
+    "type": "speech",
+  },
+]
+`;
+
+exports[`buildSegments snapshot tests > heading creates chapter segment with transition pause 1`] = `
+[
+  {
+    "audioFile": "mock/audio/3-こんにちは.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "こんにちは",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 18,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "chapterLevel": 1,
+    "durationInFrames": 0,
+    "text": "チャプター1",
+    "type": "chapter",
+  },
+  {
+    "audioFile": "mock/audio/3-これはチャプター1の.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "これはチャプター1の内容なのだ",
+    "type": "speech",
+  },
+]
+`;
+
+exports[`buildSegments snapshot tests > multi-character with speaker tags 1`] = `
+[
+  {
+    "audioFile": "mock/audio/3-こんにちは！.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "こんにちは！",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 6,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "audioFile": "mock/audio/2-よろしくね。.wav",
+    "character": "四国めたん",
+    "durationInFrames": 30,
+    "text": "よろしくね。",
+    "type": "speech",
+  },
+]
+`;
+
+exports[`buildSegments snapshot tests > pause directive creates pause segment 1`] = `
+[
+  {
+    "audioFile": "mock/audio/3-こんにちは.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "こんにちは",
+    "type": "speech",
+  },
+  {
+    "durationInFrames": 15,
+    "text": "",
+    "type": "pause",
+  },
+  {
+    "audioFile": "mock/audio/3-さようなら.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "さようなら",
+    "type": "speech",
+  },
+]
+`;
+
+exports[`buildSegments snapshot tests > single character simple speech 1`] = `
+[
+  {
+    "audioFile": "mock/audio/3-こんにちは！ずんだも.wav",
+    "character": "ずんだもん",
+    "durationInFrames": 30,
+    "text": "こんにちは！ずんだもんなのだ。",
+    "type": "speech",
+  },
+]
+`;
