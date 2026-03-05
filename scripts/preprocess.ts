@@ -5,25 +5,22 @@ import { toString } from "mdast-util-to-string";
 import matter from "gray-matter";
 import * as fs from "fs";
 import * as path from "path";
-import * as crypto from "crypto";
 import type { Segment, Manifest, ManifestConfig, Character } from "../src/types";
 import { ManifestConfigSchema } from "../src/types";
+import {
+  sanitizeForFilename,
+  shortHash,
+  processRubyTags,
+  parsePauseDirective,
+  parseSpeakerTag,
+  buildCharacterMap,
+  buildSegments,
+  parseMarkdown,
+} from "./preprocess-core";
 
 const VOICEVOX_BASE = process.env.VOICEVOX_BASE ?? "http://localhost:50021";
 
 const BASE_PUBLIC_DIR = path.resolve(__dirname, "../public/projects");
-
-function sanitizeForFilename(text: string): string {
-  return text
-    .slice(0, 20)
-    .replace(/[\/\\:*?"<>|.\s]/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/_$/, "");
-}
-
-function shortHash(text: string): string {
-  return crypto.createHash("sha256").update(text).digest("hex").slice(0, 8);
-}
 
 /** Parse WAV header to get duration in seconds */
 function getWavDurationSec(filePath: string): number {
@@ -199,56 +196,6 @@ async function blockquoteToMarkdown(
   return processor.stringify(virtualRoot).trim();
 }
 
-/**
- * Process <ruby> tags to separate display text and speech text (reading).
- * <ruby>表示<rt>よみ</rt></ruby> → displayText: "表示", speechText: "よみ"
- * Also handles optional <rp> tags.
- */
-function processRubyTags(text: string): { displayText: string; speechText: string } {
-  const rubyRe = /<ruby>(.*?)<rt>(.*?)<\/rt><\/ruby>/g;
-  const displayText = text.replace(rubyRe, (_match, base) => base);
-  const speechText = text.replace(rubyRe, (_match, _base, reading) => reading);
-  return { displayText, speechText };
-}
-
-/** Parse [pause: 500ms] directives from text, returning speech lines and pause segments */
-const PAUSE_RE = /^\[pause:\s*(\d+)(ms|s)\]$/;
-
-function parsePauseDirective(
-  line: string
-): { type: "pause"; ms: number } | null {
-  const m = line.trim().match(PAUSE_RE);
-  if (!m) return null;
-  const value = parseInt(m[1], 10);
-  const ms = m[2] === "s" ? value * 1000 : value;
-  return { type: "pause", ms };
-}
-
-/** Parse speaker tag [キャラ名] from the beginning of a line */
-const SPEAKER_TAG_RE = /^\[(.+?)\]\s*/;
-
-function parseSpeakerTag(
-  line: string
-): { character: string; text: string } | null {
-  const m = line.match(SPEAKER_TAG_RE);
-  if (!m) return null;
-  // Don't match pause directives
-  if (PAUSE_RE.test(line.trim())) return null;
-  return { character: m[1], text: line.slice(m[0].length) };
-}
-
-/** Build a map from character name to Character config */
-function buildCharacterMap(
-  characters: Character[],
-  defaultSpeakerId: number
-): Map<string, Character> {
-  const map = new Map<string, Character>();
-  for (const c of characters) {
-    map.set(c.name, c);
-  }
-  return map;
-}
-
 /** Copy character images to public directory */
 function copyCharacterImages(characters: Character[]): void {
   for (const char of characters) {
@@ -318,171 +265,31 @@ async function main() {
     }
   }
 
-  const tree = unified().use(remarkParse).parse(mdContent);
+  const tree = parseMarkdown(mdContent);
 
   fs.mkdirSync(audioDir, { recursive: true });
 
-  const segments: Segment[] = [];
+  // Use buildSegments with a synthesize wrapper that handles file I/O
+  const segments = await buildSegments(tree, config, async (text, speakerId) => {
+    return synthesize(text, speakerId, audioDir, projectName);
+  });
 
-  // Build character map for speaker tag resolution
-  const characterMap = buildCharacterMap(config.characters, config.speakerId);
-  // When only one character, use it as default (no tag needed)
-  const defaultCharacter =
-    config.characters.length === 1 ? config.characters[0] : undefined;
-
-  let prevNodeHadSpeech = false;
-
-  for (const node of tree.children) {
-    if (node.type === "heading") {
-      const title = toString(node).trim();
-      if (!title) continue;
-      const depth = (node as { depth: number }).depth;
-      console.log(`[chapter] ${"#".repeat(depth)} ${title}`);
-      // Add transition pause before chapter (except for the first segment or consecutive chapters)
-      const slideTransitionFrames = Math.ceil((config.slideTransitionMs / 1000) * config.fps);
-      const lastSeg = segments[segments.length - 1];
-      if (segments.length > 0 && slideTransitionFrames > 0 && lastSeg?.type !== "chapter") {
-        segments.push({
-          type: "pause",
-          text: "",
-          durationInFrames: slideTransitionFrames,
-        });
-      }
-      segments.push({
-        type: "chapter",
-        text: title,
-        durationInFrames: 0,
-        chapterLevel: depth,
-      });
-      prevNodeHadSpeech = false;
-    } else if (node.type === "blockquote") {
-      const text = toString(node);
+  // For blockquotes with images, we need to re-process them
+  // (buildSegments uses blockquoteToMarkdownSync which skips image processing)
+  // Re-parse and process images for slide segments
+  const tree2 = parseMarkdown(mdContent);
+  let slideIdx = 0;
+  for (const node of (tree2 as any).children) {
+    if (node.type === "blockquote") {
       const markdown = await blockquoteToMarkdown(node, mdDir, imagesDir, projectName);
-      console.log(`[slide] ${text.slice(0, 40)}...`);
-      // Add transition pause before slide, but skip if preceded by a chapter
-      // (the pause was already inserted before the chapter)
-      const slideTransitionFrames = Math.ceil((config.slideTransitionMs / 1000) * config.fps);
-      const lastSeg = segments[segments.length - 1];
-      if (segments.length > 0 && slideTransitionFrames > 0 && lastSeg?.type !== "chapter") {
-        segments.push({
-          type: "pause",
-          text: "",
-          durationInFrames: slideTransitionFrames,
-        });
-      }
-      segments.push({
-        type: "slide",
-        text,
-        markdown,
-        durationInFrames: 0,
-      });
-      prevNodeHadSpeech = false;
-    } else {
-      const fullText = toString(node).trim();
-      if (!fullText) continue;
-
-      // Insert paragraph gap if previous node produced speech
-      if (prevNodeHadSpeech) {
-        const paragraphGapFrames = Math.ceil(
-          (config.paragraphGapMs / 1000) * config.fps
-        );
-        if (paragraphGapFrames > 0) {
-          segments.push({
-            type: "pause",
-            text: "",
-            durationInFrames: paragraphGapFrames,
-          });
+      // Find the corresponding slide segment and update its markdown
+      for (let i = slideIdx; i < segments.length; i++) {
+        if (segments[i].type === "slide") {
+          segments[i].markdown = markdown;
+          slideIdx = i + 1;
+          break;
         }
       }
-
-      // Each line is a separate speech segment; [pause: ...] is a directive
-      const lines = fullText.split("\n");
-      const speechGapFrames = Math.ceil(
-        (config.speechGapMs / 1000) * config.fps
-      );
-      let speechCount = 0;
-
-      // Track current speaker within a paragraph
-      let currentCharacterName: string | undefined = defaultCharacter?.name;
-      let currentSpeakerId: number = defaultCharacter?.speakerId ?? config.speakerId;
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-
-        const pause = parsePauseDirective(trimmed);
-        if (pause) {
-          const durationInFrames = Math.ceil(
-            (pause.ms / 1000) * config.fps
-          );
-          console.log(`[pause] ${pause.ms}ms (${durationInFrames} frames)`);
-          segments.push({
-            type: "pause",
-            text: "",
-            durationInFrames,
-          });
-          speechCount = 0; // reset so next speech doesn't get a gap
-        } else {
-          // Parse speaker tag
-          let speechText = trimmed;
-          let speakerId = currentSpeakerId;
-          let characterName = currentCharacterName;
-
-          const speakerTag = parseSpeakerTag(trimmed);
-          if (speakerTag) {
-            const char = characterMap.get(speakerTag.character);
-            if (char) {
-              speechText = speakerTag.text;
-              speakerId = char.speakerId;
-              characterName = char.name;
-            } else {
-              console.warn(
-                `  [warn] Unknown character "${speakerTag.character}", using default`
-              );
-              speechText = speakerTag.text;
-              characterName = defaultCharacter?.name;
-              speakerId = defaultCharacter?.speakerId ?? config.speakerId;
-            }
-            // Update current speaker for subsequent lines
-            currentCharacterName = characterName;
-            currentSpeakerId = speakerId;
-          }
-          // Lines without a speaker tag inherit the current speaker
-
-          // Skip lines with no speech text (speaker tag only)
-          if (!speechText.trim()) continue;
-
-          // Process <ruby> tags: display text for subtitles, speech text for VOICEVOX
-          const { displayText, speechText: voicevoxText } = processRubyTags(speechText);
-
-          // Insert gap between consecutive speech lines
-          if (speechCount > 0 && speechGapFrames > 0) {
-            segments.push({
-              type: "pause",
-              text: "",
-              durationInFrames: speechGapFrames,
-            });
-          }
-
-          console.log(`[speech] ${displayText.slice(0, 40)}...`);
-          const { audioPath, durationSec } = await synthesize(
-            voicevoxText,
-            speakerId,
-            audioDir,
-            projectName
-          );
-          const durationInFrames = Math.ceil(durationSec * config.fps);
-          segments.push({
-            type: "speech",
-            text: displayText,
-            audioFile: audioPath,
-            durationInFrames,
-            ...(characterName ? { character: characterName } : {}),
-          });
-          speechCount++;
-        }
-      }
-      prevNodeHadSpeech = speechCount > 0;
     }
   }
 
