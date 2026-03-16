@@ -6,7 +6,9 @@
     "preprocess": "npx ts-node scripts/preprocess.ts",
     "studio": "npx ts-node scripts/studio.ts",
     "render": "npx ts-node scripts/render.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +34,7 @@
     "@types/node": "^25.3.0",
     "@types/react": "^19.2.14",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
