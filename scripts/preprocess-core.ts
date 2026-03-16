@@ -67,7 +67,7 @@ export function buildCharacterMap(
 
 /** Convert a blockquote AST node back to markdown string (without image processing) */
 export function blockquoteToMarkdownSync(node: any): string {
-  const processor = unified().use(remarkStringify);
+  const processor = unified().use(remarkStringify).use(remarkGfm);
   const virtualRoot = { type: "root" as const, children: node.children };
   return processor.stringify(virtualRoot).trim();
 }
